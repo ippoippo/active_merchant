@@ -694,7 +694,7 @@ module ActiveMerchant #:nodoc:
         # It's returning "#{firstname} #{lastname}" where firstname is nil, and lastname is the single name
         # This method strips any leading space characters, BUT ONLY IF we are enabling padding
         return payment_name unless (@options[:cardholder_name_padding] == true)
-        payment_name.lstrip
+        payment_name.strip
       end
 
       def c1_field_data_valid?(payment_name)
@@ -757,7 +757,14 @@ module ActiveMerchant #:nodoc:
       end
 
       def message_from(response)
-        response['z3']
+        message = response['z3']
+        unless success_from(response)
+          codes = []
+          codes << response['z2']
+          codes << response['z6'] unless response['z6'].nil?
+          message += " (%s)" % codes.join(',')
+        end
+        message
       end
 
       def authorization_from(response)
